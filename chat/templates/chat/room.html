@@ -10,18 +10,26 @@
 <div id="example"></div>
 
 <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-<input id="chat-message-input" type="text" size="100"><br>
-<input id="chat-message-submit" type="button" value="Send">
 {{ room_name|json_script:"room-name" }}
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" />
 
 <script>
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+    console.log("chatsocket=", chatSocket)
 
     const container = document.querySelector('#example');
 
-    const hot = new Handsontable(container, {
+    var hot = new Handsontable(container, {
         data: [
             ['', 'Tesla', 'Volvo', 'Toyota', 'Ford'],
             ['2019', 10, 11, 12, 13],
@@ -34,22 +42,26 @@
         licenseKey: 'non-commercial-and-evaluation' // for non-commercial use only
     });
 
-    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    hot.addHook('afterChange', function(changes, source) {
+        console.log("addHook", this.getData(), changes)
+        chatSocket.send(JSON.stringify({
+            'data': this.getData()
+        }));
 
-    const chatSocket = new WebSocket(
-        'ws://'
-        + window.location.host
-        + '/ws/chat/'
-        + roomName
-        + '/'
-    );
+    });
 
     chatSocket.onmessage = function (e) {
+        console.log("onmessage")
         const data = JSON.parse(e.data);
         document.querySelector('#chat-log').value += (data.message + '\n');
+        console.log(data)
+        // hot.data = data.data;
+        hot.loadData(data.data);
     };
+    // 入力後に無限ループになる
+    // onmessageかloadDataを変えたら良い感じかも
 
-    chatSocket.onclose = function (e) {
+    /*chatSocket.onclose = function (e) {
         console.error('Chat socket closed unexpectedly');
     };
 
@@ -67,7 +79,7 @@
             'message': message
         }));
         messageInputDom.value = '';
-    };
+    };*/
 </script>
 </body>
 </html>
