@@ -1,85 +1,108 @@
-<!-- chat/templates/chat/room.html -->
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8"/>
-    <title>Chat Room</title>
+    <title>Handsontable Spreadsheet</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        // csrf_tokenの取得
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        var ignoreChange = false;
+
+        $(document).ready(function () {
+            var socket = new WebSocket(
+                'ws://'
+                + window.location.host
+                + '/ws/chat/'
+                + 'a'
+                + '/'
+            );
+
+            socket.onopen = function () {
+                var container = document.getElementById('spreadsheet');
+                var hot = new Handsontable(container, {
+                    colHeaders: {{ columns|safe }},
+                    data: {{ data|safe }},
+                    rowHeaders: true,
+                    contextMenu: true,
+                    enterMoves: {
+                        col: 0, row: 1
+                    },
+                    licenseKey: 'non-commercial-and-evaluation',
+                    afterChange: function (changes, source) {
+                        if (!ignoreChange && source === 'edit') {
+                            socket.send(JSON.stringify(changes));
+                            AutoSubmit(changes, hot);
+                        }
+                    }
+                });
+
+                socket.onmessage = function (event) {
+                    var data = JSON.parse(event.data);
+
+                    ignoreChange = true;
+                    hot.setDataAtRowProp(data.data[0][0], data.data[0][1], data.data[0][3]);
+                    ignoreChange = false;
+
+                    var h1 = document.getElementById("input_check");
+                    h1.innerHTML = "チェック: " + data.data[0][3]; // 書き込み内容を表示
+
+                };
+            };
+
+            // viewsに送る
+            function AutoSubmit(e, hot) {
+                var data_field = {{ fields|safe }}[e[0][1]]
+
+                $.ajax({
+                    type: "POST",
+                    data: {
+                        "id": hot.getDataAtCell(e[0][0], 0),
+                        "field": data_field,
+                        "value": e[0][3],
+                    },
+                    contentType: "application/json",
+                    timeout: 5000,
+                    // AJAXリクエストにトークンをセット
+                    beforeSend: function (xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                        }
+                    },
+                }).done(function (data) {
+                    // alert("success");
+                }).fail(function (jqXHR, textStatus) {
+                    // alert("error");
+                });
+                console.log("end submit")
+            }
+        });
+    </script>
 </head>
 <body>
-
-<div id="example"></div>
-
-<textarea id="chat-log" cols="100" rows="20"></textarea><br>
-{{ room_name|json_script:"room-name" }}
-
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" />
-
-<script>
-    const roomName = JSON.parse(document.getElementById('room-name').textContent);
-
-    const chatSocket = new WebSocket(
-        'ws://'
-        + window.location.host
-        + '/ws/chat/'
-        + roomName
-        + '/'
-    );
-    console.log("chatsocket=", chatSocket)
-
-    const container = document.querySelector('#example');
-
-    var hot = new Handsontable(container, {
-        data: [
-            ['', 'Tesla', 'Volvo', 'Toyota', 'Ford'],
-            ['2019', 10, 11, 12, 13],
-            ['2020', 20, 11, 14, 13],
-            ['2021', 30, 15, 12, 13]
-        ],
-        rowHeaders: true,
-        colHeaders: true,
-        height: 'auto',
-        licenseKey: 'non-commercial-and-evaluation' // for non-commercial use only
-    });
-
-    hot.addHook('afterChange', function(changes, source) {
-        console.log("addHook", this.getData(), changes)
-        chatSocket.send(JSON.stringify({
-            'data': this.getData()
-        }));
-
-    });
-
-    chatSocket.onmessage = function (e) {
-        console.log("onmessage")
-        const data = JSON.parse(e.data);
-        document.querySelector('#chat-log').value += (data.message + '\n');
-        console.log(data)
-        // hot.data = data.data;
-        hot.loadData(data.data);
-    };
-    // 入力後に無限ループになる
-    // onmessageかloadDataを変えたら良い感じかも
-
-    /*chatSocket.onclose = function (e) {
-        console.error('Chat socket closed unexpectedly');
-    };
-
-    document.querySelector('#chat-message-input').focus();
-    document.querySelector('#chat-message-input').onkeyup = function (e) {
-        if (e.keyCode === 13) {  // enter, return
-            document.querySelector('#chat-message-submit').click();
-        }
-    };
-
-    document.querySelector('#chat-message-submit').onclick = function (e) {
-        const messageInputDom = document.querySelector('#chat-message-input');
-        const message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'message': message
-        }));
-        messageInputDom.value = '';
-    };*/
-</script>
+<h1 id="input_check">{{ check }}</h1>
+<div id="spreadsheet"></div>
 </body>
 </html>
