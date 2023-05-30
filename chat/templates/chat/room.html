@@ -53,8 +53,13 @@
                     licenseKey: 'non-commercial-and-evaluation',
                     afterChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
+                            console.log(changes, source)
                             socket.send(JSON.stringify(changes));
-                            AutoSubmit(changes, hot);
+                            // 範囲選択したときにviewを範囲分だけ実行する
+                            for (const c of changes) {
+                                console.log("c", c)
+                                AutoSubmit([c], hot);
+                            }
                         }
                     }
                 });
@@ -67,9 +72,21 @@
                     ignoreChange = false;
 
                     var h1 = document.getElementById("input_check");
-                    h1.innerHTML = "チェック: " + data.data[0][3]; // 書き込み内容を表示
+                    h1.innerHTML = data.message; // 書き込み内容を表示
 
                 };
+            };
+
+            socket.onerror = function () {
+                // 接続エラー時の処理
+                var h1 = document.getElementById("input_check");
+                h1.innerHTML = "チェック:サーバーにアクセスできません";
+            };
+
+            socket.onclose = function () {
+                // 接続が切断された時の処理
+                var h1 = document.getElementById("input_check");
+                h1.innerHTML = "チェック:サーバーとの接続が切断されました｡再度､開き直してください｡";
             };
 
             // viewsに送る
@@ -93,10 +110,11 @@
                     },
                 }).done(function (data) {
                     // alert("success");
+                    var h1 = document.getElementById("input_check");
+                    h1.innerHTML = data.message;
                 }).fail(function (jqXHR, textStatus) {
                     // alert("error");
                 });
-                console.log("end submit")
             }
         });
     </script>
