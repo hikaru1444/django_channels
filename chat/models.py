@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib import admin
 
+class User(models.Model):
+    name = models.CharField(verbose_name="担当者", max_length=100, default="no named")
+
 
 class Shop(models.Model):
     name = models.CharField(verbose_name="商品名", max_length=10, default="")
@@ -11,6 +14,11 @@ class Shop(models.Model):
     date = models.CharField(verbose_name="日付", max_length=20, default="")
     sold = models.CharField(verbose_name="売り切れ", max_length=10, default="")
     note = models.CharField(verbose_name="備考", max_length=10, default="", blank=True)
+    manager = models.ForeignKey(
+        User, verbose_name="担当者", on_delete=models.SET_NULL,
+        null=True, blank=True
+    )
+    manager_check = models.BooleanField(verbose_name="担当者チェック", default=False)
 
     def __str__(self):
         return self.name

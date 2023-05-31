@@ -33,17 +33,14 @@
 
         $(document).ready(function () {
             var socket = new WebSocket(
-                'ws://'
-                + window.location.host
-                + '/ws/chat/'
-                + 'a'
-                + '/'
+                'ws://' + window.location.host + '/ws/chat/' + '{{ room_name }}' + '/'
             );
 
             socket.onopen = function () {
                 var container = document.getElementById('spreadsheet');
                 var hot = new Handsontable(container, {
-                    colHeaders: {{ columns|safe }},
+                    colHeaders: {{ colHeaders|safe }},
+                    columns: {{ columns|safe }},
                     data: {{ data|safe }},
                     rowHeaders: true,
                     contextMenu: true,
@@ -53,16 +50,15 @@
                     licenseKey: 'non-commercial-and-evaluation',
                     afterChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
-                            console.log(changes, source)
                             socket.send(JSON.stringify(changes));
                             // 範囲選択したときにviewを範囲分だけ実行する
                             for (const c of changes) {
-                                console.log("c", c)
-                                AutoSubmit([c], hot);
+                                AutoSubmit(c, hot);
                             }
                         }
                     }
                 });
+
 
                 socket.onmessage = function (event) {
                     var data = JSON.parse(event.data);
@@ -91,14 +87,14 @@
 
             // viewsに送る
             function AutoSubmit(e, hot) {
-                var data_field = {{ fields|safe }}[e[0][1]]
+                var data_field = {{ fields|safe }}[e[1]]
 
                 $.ajax({
                     type: "POST",
                     data: {
-                        "id": hot.getDataAtCell(e[0][0], 0),
+                        "id": hot.getDataAtCell(e[0], 0),
                         "field": data_field,
-                        "value": e[0][3],
+                        "value": e[3],
                     },
                     contentType: "application/json",
                     timeout: 5000,
