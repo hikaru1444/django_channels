@@ -10,7 +10,7 @@ from django.db import models
 def index(request):
     return render(request, "chat/index.html")
 
-
+# commit test
 def room(request, room_name):
     params = {"check": "チェック:", "room_name": room_name}
     if request.method == 'POST':  # POSTの処理
