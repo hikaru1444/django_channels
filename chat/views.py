@@ -17,7 +17,7 @@ def room(request, room_name):
         # JSON文字列の取得
         dic = QueryDict(request.body, encoding='utf-8')
         c = Shop.objects.get(pk=dic['id'])
-        print("変更後", str(c), dic.get('field'), dic.get('value'))
+        print("変更後", str(c), dic.get('field'), dic.get('value'), dic.get('type'))
         setattr(c, dic.get('field'), dic.get('value'))
         try:
             c.save()
@@ -36,14 +36,13 @@ def room(request, room_name):
             'data': count,
             'type': 'text'  # Default type is 'text'
         }
-        print("field", field, type(field))
         if isinstance(field, models.BooleanField):
             column['type'] = 'checkbox'
         elif isinstance(field, models.ForeignKey):
             # Assuming you have a related model named 'RelatedModel'
             column['type'] = 'dropdown'
             print("related_model", field.related_model)
-            column['source'] = [obj.name for obj in field.related_model.objects.all()]
+            column['source'] = [obj.id for obj in field.related_model.objects.all()]
 
         params['columns'].append(column)
     print("columns", params['columns'])

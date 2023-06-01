@@ -48,7 +48,7 @@
                         col: 0, row: 1
                     },
                     licenseKey: 'non-commercial-and-evaluation',
-                    afterChange: function (changes, source) {
+                    beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
                             socket.send(JSON.stringify(changes));
                             // 範囲選択したときにviewを範囲分だけ実行する
@@ -87,6 +87,7 @@
 
             // viewsに送る
             function AutoSubmit(e, hot) {
+                var data_type = {{ columns|safe }}[e[1]].type
                 var data_field = {{ fields|safe }}[e[1]]
 
                 $.ajax({
@@ -94,6 +95,7 @@
                     data: {
                         "id": hot.getDataAtCell(e[0], 0),
                         "field": data_field,
+                        "type": data_type,  // 追加: セルのタイプを送信
                         "value": e[3],
                     },
                     contentType: "application/json",
