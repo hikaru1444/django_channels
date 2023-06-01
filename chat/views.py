@@ -3,12 +3,14 @@ import json
 from django.http import QueryDict
 from django.shortcuts import render
 
-from chat.models import Shop
+from chat.models import Shop, User
 from django.http import JsonResponse
 from django.db import models
 
+
 def index(request):
     return render(request, "chat/index.html")
+
 
 # commit test
 def room(request, room_name):
@@ -17,8 +19,16 @@ def room(request, room_name):
         # JSON文字列の取得
         dic = QueryDict(request.body, encoding='utf-8')
         c = Shop.objects.get(pk=dic['id'])
-        print("変更後", str(c), dic.get('field'), dic.get('value'), dic.get('type'))
-        setattr(c, dic.get('field'), dic.get('value'))
+        print("変更後", str(c), dic.get('field'), dic.get('value'), dic.get('type'),
+              type(dic.get('type')))
+        dic_value = dic.get('value')
+        if dic.get('type') == 'checkbox':
+            dic_value = True if dic_value == 'true' else False
+        if dic.get('type') == 'dropdown':
+            dic_value = User.objects.get(pk=int(dic_value))
+        if dic.get('type') == 'numeric':
+            dic_value = int(dic_value)
+        setattr(c, dic.get('field'), dic_value)
         try:
             c.save()
             params['check'] = "チェック:" + str(dic.get('value')) + "に変更しました!"
@@ -43,13 +53,12 @@ def room(request, room_name):
             column['type'] = 'dropdown'
             print("related_model", field.related_model)
             column['source'] = [obj.id for obj in field.related_model.objects.all()]
+        elif isinstance(field, models.IntegerField):
+            # Assuming you have a related model named 'RelatedModel'
+            column['type'] = 'numeric'
 
         params['columns'].append(column)
-    print("columns", params['columns'])
-
 
     # print(params['columns'])
     params['data'] = json.dumps(list(Shop.objects.all().values_list()))
-    print("dataa", params['data'])
-    print("dataa2", json.loads(params['data'])[0])
     return render(request, "chat/room.html", params)

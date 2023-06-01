@@ -50,6 +50,7 @@
                     licenseKey: 'non-commercial-and-evaluation',
                     beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
+                            console.log("beforeChange")
                             socket.send(JSON.stringify(changes));
                             // 範囲選択したときにviewを範囲分だけ実行する
                             for (const c of changes) {
