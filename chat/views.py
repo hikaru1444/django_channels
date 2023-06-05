@@ -24,10 +24,12 @@ def room(request, room_name):
         dic_value = dic.get('value')
         if dic.get('type') == 'checkbox':
             dic_value = True if dic_value == 'true' else False
-        if dic.get('type') == 'dropdown':
+        elif dic.get('type') == 'dropdown':
             dic_value = User.objects.get(pk=int(dic_value))
-        if dic.get('type') == 'numeric':
-            dic_value = int(dic_value)
+        elif dic.get('type') == 'numeric':  # nullを許容しない場合はNoneを0などにすること
+            dic_value = int(dic_value) if dic_value else None
+        elif dic.get('type') == 'date':  # 空白はNoneにする
+            dic_value = dic_value if dic_value else None
         setattr(c, dic.get('field'), dic_value)
         try:
             c.save()
@@ -56,9 +58,24 @@ def room(request, room_name):
         elif isinstance(field, models.IntegerField):
             # Assuming you have a related model named 'RelatedModel'
             column['type'] = 'numeric'
+        elif isinstance(field, models.DateField):
+            # Assuming you have a related model named 'RelatedModel'
+            column['type'] = 'date'
+            column['dateFormat'] = 'YYYY-MM-DD'
 
         params['columns'].append(column)
 
     # print(params['columns'])
-    params['data'] = json.dumps(list(Shop.objects.all().values_list()))
+    from datetime import datetime, date
+    def custom_default(o):
+        if hasattr(o, '__iter__'):
+            # イテラブルなものはリストに
+            return list(o)
+        elif isinstance(o, (datetime, date)):
+            # 日時の場合はisoformatに
+            return o.isoformat()
+        else:
+            # それ以外は文字列に
+            return str(o)
+    params['data'] = json.dumps(list(Shop.objects.all().values_list()), default=custom_default)
     return render(request, "chat/room.html", params)
