@@ -7,6 +7,12 @@ import random
 
 
 def create_models(apps, schema_editor):
+
+    # Userデータを追加
+    from chat.models import User
+    User.objects.create(name="hikaru")
+    User.objects.create(name="taro")
+    User.objects.create(name="hanako")
     name = ['game', 'book', 'pc', 'phone', 'water', 'salt', 'watch', 'iron', 'paper', 'ticket',
             'head', 'eye', 'hand', 'leg', 'english', 'japanese']
     money = [100, 200, 300, 400, 500]
@@ -15,19 +21,15 @@ def create_models(apps, schema_editor):
     color = ['red', 'blue', 'green', 'white', 'black', 'yellow', 'pink', 'orange']
     date = ['2023-05-30', '2023-05-26', '2023-05-23', '2023-05-20', '2023-05-15', '2023-05-11',
             '2023-05-01']
+    time = ['09:00', '09:30', '10:00', '12:22', '13:59', '23:00', ]
     sold = ["はい", "いいえ"]
     manager = [1, 2, 3]
     for i in range(0, 100):
         Shop.objects.create(name=random.choice(name), money=random.choice(money),
                             size=random.choice(size), quantity=random.choice(quantity),
                             color=random.choice(color), date=random.choice(date),
+                            time=random.choice(time),
                             sold=random.choice(sold), manager_id=random.choice(manager))
-
-    # Userデータを追加
-    from chat.models import User
-    User.objects.create(name="hikaru")
-    User.objects.create(name="taro")
-    User.objects.create(name="hanako")
 
 
 class Migration(migrations.Migration):
@@ -57,6 +59,7 @@ class Migration(migrations.Migration):
                 ('quantity', models.IntegerField(null=True, verbose_name='個数')),
                 ('color', models.CharField(default='', max_length=10, verbose_name='色')),
                 ('date', models.DateField(null=True, verbose_name='日付')),
+                ('time', models.TimeField(null=True, verbose_name='時間')),
                 ('sold', models.CharField(default='', max_length=10, verbose_name='売り切れ')),
                 ('note',
                  models.CharField(blank=True, default='', max_length=10, verbose_name='備考')),

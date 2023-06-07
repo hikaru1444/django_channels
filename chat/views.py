@@ -1,81 +1,110 @@
+import datetime
 import json
 
-from django.http import QueryDict
-from django.shortcuts import render
-
-from chat.models import Shop, User
-from django.http import JsonResponse
 from django.db import models
+from django.http import JsonResponse, QueryDict
+from django.shortcuts import render
+from django.views import View
+
+from chat.models import Shop
 
 
 def index(request):
     return render(request, "chat/index.html")
 
 
-# commit test
-def room(request, room_name):
-    params = {"check": "チェック:", "room_name": room_name}
-    if request.method == 'POST':  # POSTの処理
-        # JSON文字列の取得
+class RoomView(View):
+    model = Shop  # デフォルトのモデル
+
+    hot_settings = {
+        'licenseKey': 'non-commercial-and-evaluation',
+    }
+
+    def get(self, request, room_name):
+        params = {"check": "チェック:", "room_name": room_name}
+        params['fields'] = [field.name for field in self.model._meta.fields]
+        params['colHeaders'] = [field.verbose_name for field in self.model._meta.fields]
+        params['columns'] = []
+        params['hot_settings'] = self.hot_settings
+
+        for count, field in enumerate(self.model._meta.fields):
+            column = {
+                'data': count,
+                'type': 'text'  # デフォルトのタイプは 'text'
+            }
+            if isinstance(field, models.BooleanField):
+                column['type'] = 'checkbox'
+                column['className'] = 'htCenter htMiddle'
+            elif isinstance(field, models.ForeignKey):
+                # 関連するモデルがあると仮定しています（'RelatedModel'とします）
+                column['type'] = 'dropdown'
+                column['source'] = [''] + [obj.name for obj in field.related_model.objects.all()]
+            elif isinstance(field, models.IntegerField):
+                column['type'] = 'numeric'
+            elif isinstance(field, models.DateField):
+                column['type'] = 'date'
+                column['dateFormat'] = 'YYYY-MM-DD'
+            elif isinstance(field, models.TimeField):
+                column['type'] = 'time'
+                column['timeFormat'] = 'HH:mm'
+
+            params['columns'].append(column)
+
+        def custom_default(o):
+            if hasattr(o, '__iter__'):
+                return list(o)
+            elif isinstance(o, (datetime.datetime, datetime.date)):
+                return o.isoformat()
+            elif isinstance(o, datetime.time):
+                return o.strftime('%H:%M')
+            else:
+                return str(o)
+
+        params['data'] = json.dumps(list(self.model.objects.all().values_list().order_by('id')),
+                                    default=custom_default)
+        dropdowns = [i['data'] for i in params['columns'] if i['type'] == "dropdown"]
+        if len(dropdowns) > 0:
+            params['data'] = json.loads(params['data'])
+            for dropdown_field in dropdowns:
+                field = self.model._meta.fields[dropdown_field]
+                related_model = field.related_model
+                values = related_model.objects.all().values('name')
+                print("data", params['data'])
+                for j in params['data']:
+                    if j[dropdown_field] is None:
+                        j[dropdown_field] = ''
+                    else:
+                        j[dropdown_field] = values[j[dropdown_field] - 1]['name']
+            params['data'] = json.dumps(params['data'])
+
+        return render(request, "chat/room.html", params)
+
+    def post(self, request, room_name):
         dic = QueryDict(request.body, encoding='utf-8')
-        c = Shop.objects.get(pk=dic['id'])
-        print("変更後", str(c), dic.get('field'), dic.get('value'), dic.get('type'),
-              type(dic.get('type')))
+        c = self.model.objects.get(pk=dic['id'])
         dic_value = dic.get('value')
+
         if dic.get('type') == 'checkbox':
             dic_value = True if dic_value == 'true' else False
         elif dic.get('type') == 'dropdown':
-            dic_value = User.objects.get(pk=int(dic_value))
-        elif dic.get('type') == 'numeric':  # nullを許容しない場合はNoneを0などにすること
+            if dic.get('value') == '':
+                dic_value = None
+            else:
+                field = self.model._meta.get_field(dic.get('field'))
+                related_model = field.related_model
+                dic_value = related_model.objects.get(name=dic_value)
+        elif dic.get('type') == 'numeric':
             dic_value = int(dic_value) if dic_value else None
-        elif dic.get('type') == 'date':  # 空白はNoneにする
+        elif dic.get('type') in ['date', 'time']:
             dic_value = dic_value if dic_value else None
+
         setattr(c, dic.get('field'), dic_value)
+
         try:
             c.save()
-            params['check'] = "チェック:" + str(dic.get('value')) + "に変更しました!"
+            params = {"check": "チェック:" + str(dic.get('value')) + "に変更しました!"}
+            return JsonResponse({'status': 'success', 'message': params['check']})
         except ValueError:
-            print("roomvalueerror")
-            params['check'] = "チェック:" + str(dic.get('value')) \
-                              + "は保存できません｡戻すには｢ctrl+Zキー｣を押してください"
-        return JsonResponse({'status': 'success', 'message': params['check']})  # JSONを返す
-    params['fields'] = [field.name for field in Shop._meta.fields]
-    params['colHeaders'] = [field.verbose_name for field in Shop._meta.fields]
-    params['columns'] = []
-
-    for count, field in enumerate(Shop._meta.fields):
-        column = {
-            'data': count,
-            'type': 'text'  # Default type is 'text'
-        }
-        if isinstance(field, models.BooleanField):
-            column['type'] = 'checkbox'
-        elif isinstance(field, models.ForeignKey):
-            # Assuming you have a related model named 'RelatedModel'
-            column['type'] = 'dropdown'
-            print("related_model", field.related_model)
-            column['source'] = [obj.id for obj in field.related_model.objects.all()]
-        elif isinstance(field, models.IntegerField):
-            # Assuming you have a related model named 'RelatedModel'
-            column['type'] = 'numeric'
-        elif isinstance(field, models.DateField):
-            # Assuming you have a related model named 'RelatedModel'
-            column['type'] = 'date'
-            column['dateFormat'] = 'YYYY-MM-DD'
-
-        params['columns'].append(column)
-
-    # print(params['columns'])
-    from datetime import datetime, date
-    def custom_default(o):
-        if hasattr(o, '__iter__'):
-            # イテラブルなものはリストに
-            return list(o)
-        elif isinstance(o, (datetime, date)):
-            # 日時の場合はisoformatに
-            return o.isoformat()
-        else:
-            # それ以外は文字列に
-            return str(o)
-    params['data'] = json.dumps(list(Shop.objects.all().values_list()), default=custom_default)
-    return render(request, "chat/room.html", params)
+            params = {
+                "check": "チェック:" + str(dic.get('value')) + "は保存できません｡戻すには｢ctrl+Zキー｣を押してください"}
+            return JsonResponse({'status': 'error', 'message': params['check']})

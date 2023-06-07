@@ -31,14 +31,27 @@
 
         var ignoreChange = false;
 
+        var setBooleansObject = function (obj) {
+        for (var key in obj) {
+            if (obj[key] == "true") {
+                obj[key] = true;
+            } else if (obj[key] == "false") {
+                obj[key] = false;
+            }
+        }
+    }
+
         $(document).ready(function () {
             var socket = new WebSocket(
                 'ws://' + window.location.host + '/ws/chat/' + '{{ room_name }}' + '/'
             );
+            var None = ''
 
             socket.onopen = function () {
                 var container = document.getElementById('spreadsheet');
-                var hot = new Handsontable(container, {
+                var extraHotSettings = {{ hot_settings|safe }};
+                setBooleansObject(extraHotSettings);
+                var hotSettings = {
                     colHeaders: {{ colHeaders|safe }},
                     columns: {{ columns|safe }},
                     data: {{ data|safe }},
@@ -57,8 +70,11 @@
                                 AutoSubmit(c, hot);
                             }
                         }
-                    }
-                });
+                    },
+                }
+                var hotSettings = $.extend(hotSettings, extraHotSettings);
+
+                var hot = new Handsontable(container, hotSettings);
 
 
                 socket.onmessage = function (event) {
@@ -119,6 +135,11 @@
     </script>
 </head>
 <body>
+<p>******作り終わったら消すこと********</p>
+<p><a href="http://127.0.0.1:8000/chat/a/">CHAT</a></p>
+<p><a href="http://127.0.0.1:8000/admin/">ADMIN</a></p>
+<p>｢ctrl+enter｣で改行できる</p>
+<p>****************************</p>
 <h1 id="input_check">{{ check }}</h1>
 <div id="spreadsheet"></div>
 </body>
