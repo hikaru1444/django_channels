@@ -74,7 +74,7 @@ class RoomView(View):
                     if j[dropdown_field] is None:
                         j[dropdown_field] = ''
                     else:
-                        j[dropdown_field] = values[j[dropdown_field] - 1]['name']
+                        j[dropdown_field] = values[int(j[dropdown_field]) - 1]['name']
             params['data'] = json.dumps(params['data'])
 
         return render(request, "chat/room.html", params)
