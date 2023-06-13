@@ -18,7 +18,7 @@ class Shop(models.Model):
     date = models.DateField(verbose_name="日付", null=True)
     time = models.TimeField(verbose_name="時間", null=True)
     sold = models.CharField(verbose_name="売り切れ", max_length=10, default="")
-    note = models.CharField(verbose_name="備考", max_length=10, default="", blank=True)
+    note = models.CharField(verbose_name="備考", max_length=10, default="")
     manager = models.ForeignKey(
         User, verbose_name="担当者", on_delete=models.SET_NULL,
         null=True, blank=True

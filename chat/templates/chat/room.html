@@ -32,14 +32,14 @@
         var ignoreChange = false;
 
         var setBooleansObject = function (obj) {
-        for (var key in obj) {
-            if (obj[key] == "true") {
-                obj[key] = true;
-            } else if (obj[key] == "false") {
-                obj[key] = false;
+            for (var key in obj) {
+                if (obj[key] == "true") {
+                    obj[key] = true;
+                } else if (obj[key] == "false") {
+                    obj[key] = false;
+                }
             }
         }
-    }
 
         $(document).ready(function () {
             var socket = new WebSocket(
@@ -63,10 +63,20 @@
                     licenseKey: 'non-commercial-and-evaluation',
                     beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
-                            console.log("beforeChange")
-                            socket.send(JSON.stringify(changes));
+                            console.log("beforeChange", changes, source)
+
                             // 範囲選択したときにviewを範囲分だけ実行する
                             for (const c of changes) {
+                                socket.send(JSON.stringify([c]));
+                                AutoSubmit(c, hot);
+                            }
+                        }
+                    },
+                    beforePaste: function (changes, source) {
+                        for (var i = 0; i < changes.length; i++) {
+                            for (var j = 0; j < changes[i].length; j++) {
+                                var c = [source[0].startRow + i, source[0].startCol + j, '', changes[i][j]]
+                                socket.send(JSON.stringify([c]));
                                 AutoSubmit(c, hot);
                             }
                         }
@@ -135,12 +145,12 @@
     </script>
 </head>
 <body>
-<p>******作り終わったら消すこと********</p>
+<p>******メモ(作り終わったら消すこと)********</p>
 <p><a href="http://127.0.0.1:8000/chat/a/">CHAT</a></p>
 <p><a href="http://127.0.0.1:8000/admin/">ADMIN</a></p>
 <p>｢ctrl+enter｣で改行できる</p>
 <p>****************************</p>
-<h1 id="input_check">{{ check }}</h1>
+<h1 id="input_check">{{ check|safe }}</h1>
 <div id="spreadsheet"></div>
 </body>
 </html>

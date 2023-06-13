@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ('time', models.TimeField(null=True, verbose_name='時間')),
                 ('sold', models.CharField(default='', max_length=10, verbose_name='売り切れ')),
                 ('note',
-                 models.CharField(blank=True, default='', max_length=10, verbose_name='備考')),
+                 models.CharField(default='', max_length=10, verbose_name='備考')),
                 ('manager_check', models.BooleanField(default=False, verbose_name='担当者チェック')),
                 ('manager', models.ForeignKey(blank=True, null=True,
                                               on_delete=django.db.models.deletion.SET_NULL,
