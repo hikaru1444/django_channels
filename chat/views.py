@@ -77,6 +77,7 @@ class RoomView(View):
                         j[dropdown_field] = values[int(j[dropdown_field]) - 1]['name']
             params['data'] = json.dumps(params['data'])
 
+        print(params)
         return render(request, "chat/room.html", params)
 
     def post(self, request, room_name):
