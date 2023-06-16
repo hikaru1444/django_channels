@@ -8,7 +8,6 @@ from django.views import View
 
 from chat.models import Shop
 
-
 def index(request):
     return render(request, "chat/index.html")
 
@@ -17,7 +16,6 @@ class RoomView(View):
     model = Shop  # デフォルトのモデル
 
     hot_settings = {
-        'licenseKey': 'non-commercial-and-evaluation',
     }
 
     def get(self, request, room_name):
@@ -38,7 +36,8 @@ class RoomView(View):
             elif isinstance(field, models.ForeignKey):
                 # 関連するモデルがあると仮定しています（'RelatedModel'とします）
                 column['type'] = 'dropdown'
-                column['source'] = [''] + [obj.name for obj in field.related_model.objects.all()]
+                column['source'] = ['']
+                column['source'] += [str(obj) for obj in field.related_model.objects.all()]
             elif isinstance(field, models.IntegerField):
                 column['type'] = 'numeric'
             elif isinstance(field, models.DateField):
@@ -66,18 +65,21 @@ class RoomView(View):
         if len(dropdowns) > 0:
             params['data'] = json.loads(params['data'])
             for dropdown_field in dropdowns:
+
+
                 field = self.model._meta.fields[dropdown_field]
+
                 related_model = field.related_model
-                values = related_model.objects.all().values('name')
-                print("data", params['data'])
+                # ss_key = related_model.objects.all().first().ss()['Key']
+                values = related_model.objects.all().values()
                 for j in params['data']:
                     if j[dropdown_field] is None:
                         j[dropdown_field] = ''
                     else:
-                        j[dropdown_field] = values[int(j[dropdown_field]) - 1]['name']
+                        # j[dropdown_field] = values[int(j[dropdown_field]) - 1]['name']
+                        j[dropdown_field] = j[dropdown_field]
             params['data'] = json.dumps(params['data'])
 
-        print(params)
         return render(request, "chat/room.html", params)
 
     def post(self, request, room_name):
@@ -98,6 +100,8 @@ class RoomView(View):
             dic_value = int(dic_value) if dic_value else None
         elif dic.get('type') in ['date', 'time']:
             dic_value = dic_value if dic_value else None
+
+        print("c", c, dic.get('field'), dic_value)
 
         setattr(c, dic.get('field'), dic_value)
 

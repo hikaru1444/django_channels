@@ -60,6 +60,10 @@
                     enterMoves: {
                         col: 0, row: 1
                     },
+                    hiddenColumns: {
+                        columns: [0],
+                        indicators: true,
+                    },
                     licenseKey: 'non-commercial-and-evaluation',
                     beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
@@ -149,6 +153,8 @@
 <p><a href="http://127.0.0.1:8000/chat/a/">CHAT</a></p>
 <p><a href="http://127.0.0.1:8000/admin/">ADMIN</a></p>
 <p>｢ctrl+enter｣で改行できる</p>
+<p>｢ctrl+z｣で戻す(保存はできてないためエンターなどを押す)</p>
+<p>｢ctrl+y｣で進む(保存はできてないためエンターなどを押す)</p>
 <p>****************************</p>
 <h1 id="input_check">{{ check|safe }}</h1>
 <div id="spreadsheet"></div>

@@ -2,8 +2,12 @@ from django.db import models
 from django.contrib import admin
 
 
+class ForeignKeyWithStrToField(models.ForeignKey):
+    def get_to_field(self):
+        return self.to_field
+
 class User(models.Model):
-    name = models.CharField(verbose_name="担当者", max_length=100, default="no named")
+    name = models.CharField(verbose_name="担当者", max_length=100, default="no named", unique=True)
 
     def __str__(self):
         return self.name
@@ -19,8 +23,8 @@ class Shop(models.Model):
     time = models.TimeField(verbose_name="時間", null=True)
     sold = models.CharField(verbose_name="売り切れ", max_length=10, default="")
     note = models.CharField(verbose_name="備考", max_length=10, default="")
-    manager = models.ForeignKey(
-        User, verbose_name="担当者", on_delete=models.SET_NULL,
+    manager = ForeignKeyWithStrToField(
+        User, to_field="name", verbose_name="担当者", on_delete=models.SET_NULL,
         null=True, blank=True
     )
     manager_check = models.BooleanField(verbose_name="担当者チェック", default=False)

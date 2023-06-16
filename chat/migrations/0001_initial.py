@@ -4,7 +4,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 from chat.models import Shop
 import random
-
+import chat
 
 def create_models(apps, schema_editor):
 
@@ -23,7 +23,7 @@ def create_models(apps, schema_editor):
             '2023-05-01']
     time = ['09:00', '09:30', '10:00', '12:22', '13:59', '23:00', ]
     sold = ["はい", "いいえ"]
-    manager = [1, 2, 3]
+    manager = ["hikaru", "taro", "hanako"]
     for i in range(0, 100):
         Shop.objects.create(name=random.choice(name), money=random.choice(money),
                             size=random.choice(size), quantity=random.choice(quantity),
@@ -33,6 +33,7 @@ def create_models(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+
     initial = True
 
     dependencies = [
@@ -42,17 +43,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='User',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False,
-                                           verbose_name='ID')),
-                ('name',
-                 models.CharField(default='no named', max_length=100, verbose_name='担当者')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(default='no named', max_length=100, unique=True, verbose_name='担当者')),
             ],
         ),
         migrations.CreateModel(
             name='Shop',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False,
-                                           verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(default='', max_length=10, verbose_name='商品名')),
                 ('money', models.IntegerField(null=True, verbose_name='金額')),
                 ('size', models.IntegerField(null=True, verbose_name='大きさ')),
@@ -61,14 +59,10 @@ class Migration(migrations.Migration):
                 ('date', models.DateField(null=True, verbose_name='日付')),
                 ('time', models.TimeField(null=True, verbose_name='時間')),
                 ('sold', models.CharField(default='', max_length=10, verbose_name='売り切れ')),
-                ('note',
-                 models.CharField(default='', max_length=10, verbose_name='備考')),
+                ('note', models.CharField(default='', max_length=10, verbose_name='備考')),
                 ('manager_check', models.BooleanField(default=False, verbose_name='担当者チェック')),
-                ('manager', models.ForeignKey(blank=True, null=True,
-                                              on_delete=django.db.models.deletion.SET_NULL,
-                                              to='chat.user', verbose_name='担当者')),
+                ('manager', chat.models.ForeignKeyWithStrToField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='chat.user', to_field='name', verbose_name='担当者')),
             ],
         ),
         migrations.RunPython(create_models, lambda apps, schema_editor: None)
-
     ]
