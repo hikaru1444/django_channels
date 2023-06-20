@@ -8,6 +8,7 @@ from django.views import View
 
 from chat.models import Shop
 
+
 def index(request):
     return render(request, "chat/index.html")
 
@@ -16,10 +17,16 @@ class RoomView(View):
     model = Shop  # デフォルトのモデル
 
     hot_settings = {
+        'autoWrapRow': 'true',
+        'wordWrap': 'false',
+        'rowHeaders': 'true',
+        'contextMenu': 'false',
+        'search': 'true',
+        'licenseKey': 'non-commercial-and-evaluation',
     }
 
-    def get(self, request, room_name):
-        params = {"check": "チェック:", "room_name": room_name}
+    def get(self, request):
+        params = {"check": "チェック:"}
         params['fields'] = [field.name for field in self.model._meta.fields]
         params['colHeaders'] = [field.verbose_name for field in self.model._meta.fields]
         params['columns'] = []
@@ -82,7 +89,7 @@ class RoomView(View):
 
         return render(request, "chat/room.html", params)
 
-    def post(self, request, room_name):
+    def post(self, request):
         dic = QueryDict(request.body, encoding='utf-8')
         c = self.model.objects.get(pk=dic['id'])
         dic_value = dic.get('value')
