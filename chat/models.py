@@ -3,8 +3,14 @@ from django.contrib import admin
 
 
 class ForeignKeyWithStrToField(models.ForeignKey):
+    def __init__(self, *args, to_field=None, **kwargs):
+        if to_field is None:
+            raise ValueError("to_field is required")
+        super().__init__(*args, to_field=to_field, **kwargs)
+
     def get_to_field(self):
         return self.to_field
+
 
 class User(models.Model):
     name = models.CharField(verbose_name="担当者", max_length=100, default="no named", unique=True)

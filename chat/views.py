@@ -15,8 +15,10 @@ def index(request):
 
 class RoomView(View):
     model = Shop  # デフォルトのモデル
+    zoom = 1  # スプレットシートの大きさをcssで変更
 
     hot_settings = {
+        'height': '800',
         'autoWrapRow': 'true',
         'wordWrap': 'false',
         'rowHeaders': 'true',
@@ -25,12 +27,17 @@ class RoomView(View):
         'licenseKey': 'non-commercial-and-evaluation',
     }
 
+    columns = {
+        # {'size': {'readOnly': 'true'}},
+    }
+
     def get(self, request):
         params = {"check": "チェック:"}
         params['fields'] = [field.name for field in self.model._meta.fields]
         params['colHeaders'] = [field.verbose_name for field in self.model._meta.fields]
         params['columns'] = []
         params['hot_settings'] = self.hot_settings
+        params['zoom'] = self.zoom
 
         for count, field in enumerate(self.model._meta.fields):
             column = {
@@ -53,6 +60,13 @@ class RoomView(View):
             elif isinstance(field, models.TimeField):
                 column['type'] = 'time'
                 column['timeFormat'] = 'HH:mm'
+            else:
+                column['editor'] = 'maxlength'
+                column['maxLength'] = field.max_length
+            if field.name in 'size':
+                column['readOnly'] = 'true'
+                column['color'] = 'blue'
+            print("field", field, field.name, type(field.name))
 
             params['columns'].append(column)
 
