@@ -64,6 +64,12 @@
                         columns: [0],
                         indicators: true,
                     },
+                    // 固定された列の数
+                    fixedColumnsLeft: 1,
+                    // 固定された行の数
+                    fixedRowsTop: 1,
+                    filters: true,
+                    dropdownMenu: true,
                     licenseKey: 'non-commercial-and-evaluation',
                     beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
@@ -112,8 +118,10 @@
 
                 socket.onmessage = function (event) {
                     var data = JSON.parse(event.data);
+                    console.log("data", data, hot.getDataAtCell(0, data.data[0][0]))
 
                     ignoreChange = true;
+                    // フィルターを掛けたりすると別ウィンドウではデータの位置が違う場合がある
                     hot.setDataAtRowProp(data.data[0][0], data.data[0][1], data.data[0][3]);
                     ignoreChange = false;
 

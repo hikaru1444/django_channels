@@ -8,7 +8,6 @@ from django.views import View
 
 from chat.models import Shop
 
-
 def index(request):
     return render(request, "chat/index.html")
 
