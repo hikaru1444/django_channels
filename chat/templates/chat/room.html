@@ -33,9 +33,9 @@
 
         var setBooleansObject = function (obj) {
             for (var key in obj) {
-                if (obj[key] == "true") {
+                if (obj[key] === "true") {
                     obj[key] = true;
-                } else if (obj[key] == "false") {
+                } else if (obj[key] === "false") {
                     obj[key] = false;
                 }
             }
@@ -46,6 +46,7 @@
                 'ws://' + window.location.host + '/ws/chat/' + 'room' + '/'
             );
             var None = ''
+            console.log("hiddenrows", {{ hidden_rows|safe }})
 
             socket.onopen = function () {
                 var container = document.getElementById('spreadsheet');
@@ -55,22 +56,12 @@
                     colHeaders: {{ colHeaders|safe }},
                     columns: {{ columns|safe }},
                     data: {{ data|safe }},
-                    rowHeaders: true,
-                    contextMenu: true,
-                    enterMoves: {
-                        col: 0, row: 1
+                    // hiddenRowsプロパティを追加
+                    hiddenRows: {
+                        copyPasteEnabled: false,
+                        indicators: false,
+                        rows: {{ hidden_rows|safe }},
                     },
-                    hiddenColumns: {
-                        columns: [0],
-                        indicators: true,
-                    },
-                    // 固定された列の数
-                    fixedColumnsLeft: 1,
-                    // 固定された行の数
-                    fixedRowsTop: 1,
-                    filters: true,
-                    dropdownMenu: true,
-                    licenseKey: 'non-commercial-and-evaluation',
                     beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
                             console.log("beforeChange", changes, source)

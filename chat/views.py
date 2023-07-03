@@ -8,6 +8,7 @@ from django.views import View
 
 from chat.models import Shop
 
+
 def index(request):
     return render(request, "chat/index.html")
 
@@ -24,7 +25,16 @@ class RoomView(View):
         'contextMenu': 'false',
         'search': 'true',
         'licenseKey': 'non-commercial-and-evaluation',
+        'enterMoves': {
+            'col': 0, 'row': 1
+        },
     }
+    """
+    
+        'hiddenColumns': {
+            'columns': [0],
+            'indicators': 'true',
+        },"""
 
     columns = {
         # {'size': {'readOnly': 'true'}},
@@ -69,6 +79,17 @@ class RoomView(View):
 
             params['columns'].append(column)
 
+        rows = self.model.objects.count() - 1
+        hidden_rows = list(filter(lambda x: x <= rows,
+                                  self.model.objects.filter(manager='hikaru').values_list('id',
+                                                                                          flat=True).order_by(
+                                      'id')))
+
+        hidden_rows = [x - 1 for x in hidden_rows]
+        print(hidden_rows, type(hidden_rows))
+
+        params['hidden_rows'] = hidden_rows
+
         def custom_default(o):
             if hasattr(o, '__iter__'):
                 return list(o)
@@ -85,7 +106,6 @@ class RoomView(View):
         if len(dropdowns) > 0:
             params['data'] = json.loads(params['data'])
             for dropdown_field in dropdowns:
-
 
                 field = self.model._meta.fields[dropdown_field]
 
