@@ -28,16 +28,14 @@ class RoomView(View):
         'enterMoves': {
             'col': 0, 'row': 1
         },
-    }
-    """
-    
         'hiddenColumns': {
             'columns': [0],
-            'indicators': 'true',
-        },"""
+            'indicators': 'false',
+        },
+    }
 
     columns = {
-        # {'size': {'readOnly': 'true'}},
+        # 'sample_field': {'property1': 'true', 'property2': 'false'},
     }
 
     def get(self, request):
@@ -50,6 +48,7 @@ class RoomView(View):
 
         for count, field in enumerate(self.model._meta.fields):
             column = {
+                'field': field.name,
                 'data': count,
                 'type': 'text'  # デフォルトのタイプは 'text'
             }
@@ -72,23 +71,13 @@ class RoomView(View):
             else:
                 column['editor'] = 'maxlength'
                 column['maxLength'] = field.max_length
-            if field.name in 'size':
-                column['readOnly'] = 'true'
-                column['color'] = 'blue'
-            print("field", field, field.name, type(field.name))
+            # ここにcolumnsへ追加する
+            for keys, values in self.columns.items():
+                if keys == field.name:
+                    for key, value in values.items():
+                        column[key] = value
 
             params['columns'].append(column)
-
-        rows = self.model.objects.count() - 1
-        hidden_rows = list(filter(lambda x: x <= rows,
-                                  self.model.objects.filter(manager='hikaru').values_list('id',
-                                                                                          flat=True).order_by(
-                                      'id')))
-
-        hidden_rows = [x - 1 for x in hidden_rows]
-        print(hidden_rows, type(hidden_rows))
-
-        params['hidden_rows'] = hidden_rows
 
         def custom_default(o):
             if hasattr(o, '__iter__'):
@@ -110,13 +99,11 @@ class RoomView(View):
                 field = self.model._meta.fields[dropdown_field]
 
                 related_model = field.related_model
-                # ss_key = related_model.objects.all().first().ss()['Key']
                 values = related_model.objects.all().values()
                 for j in params['data']:
                     if j[dropdown_field] is None:
                         j[dropdown_field] = ''
                     else:
-                        # j[dropdown_field] = values[int(j[dropdown_field]) - 1]['name']
                         j[dropdown_field] = j[dropdown_field]
             params['data'] = json.dumps(params['data'])
 

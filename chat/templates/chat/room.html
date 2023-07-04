@@ -56,12 +56,6 @@
                     colHeaders: {{ colHeaders|safe }},
                     columns: {{ columns|safe }},
                     data: {{ data|safe }},
-                    // hiddenRowsプロパティを追加
-                    hiddenRows: {
-                        copyPasteEnabled: false,
-                        indicators: false,
-                        rows: {{ hidden_rows|safe }},
-                    },
                     beforeChange: function (changes, source) {
                         if (!ignoreChange && source === 'edit') {
                             console.log("beforeChange", changes, source)
@@ -167,13 +161,6 @@
     </script>
 </head>
 <body>
-<p>******メモ(作り終わったら消すこと)********</p>
-<p><a href="http://127.0.0.1:8000/chat/a/">CHAT</a></p>
-<p><a href="http://127.0.0.1:8000/admin/">ADMIN</a></p>
-<p>｢ctrl+enter｣で改行できる</p>
-<p>｢ctrl+z｣で戻す(保存はできてないためエンターなどを押す)</p>
-<p>｢ctrl+y｣で進む(保存はできてないためエンターなどを押す)</p>
-<p>****************************</p>
 <h1 id="input_check">{{ check|safe }}</h1>
 <div id="spreadsheet" style="zoom: {{ zoom }};"></div>
 </body>

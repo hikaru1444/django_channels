@@ -6,6 +6,7 @@ from chat.models import Shop
 import random
 import chat
 
+
 def create_models(apps, schema_editor):
 
     # Userデータを追加
