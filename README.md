@@ -5,5 +5,3 @@ urls.pyに1行追加するだけでDjango adminのような使用感でモデル
 
 
 ###サンプル
-
-[channels_handsontable_sample.mp4](..%2F..%2FOneDrive%2F%83%66%83%58%83%4E%83%67%83%62%83%76%2Fchannels_handsontable_sample.mp4)
