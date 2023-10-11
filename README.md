@@ -24,9 +24,6 @@ path("room/", views.RoomView.as_view(model=Shop), name="room")  # 例
 
 編集をするともう片方のウィンドウにも反映されること、ページの更新をしてモデルが保存されていることを確認しています。
 
-https://github.com/hikaru1444/djangochannels/assets/82006837/7c1e835a-c3dd-457b-ba00-013b0ba59928
-
-
 
 https://github.com/hikaru1444/djangochannels/assets/82006837/31b2f2ad-d9b7-45c2-b60a-5b0e36ea2109
 
