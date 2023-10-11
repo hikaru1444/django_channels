@@ -28,6 +28,10 @@ https://github.com/hikaru1444/djangochannels/assets/82006837/7c1e835a-c3dd-457b-
 
 
 
+https://github.com/hikaru1444/djangochannels/assets/82006837/31b2f2ad-d9b7-45c2-b60a-5b0e36ea2109
+
+
+
 
 # インストール
 
