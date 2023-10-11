@@ -1,41 +1,75 @@
-###公開先
+# 公開先
+
+
 https://github.com/hikaru1444/djangochannels
 
-###概要
 
-同時編集可能なスプレッドシートにPython,Djangoの強力な機能を持ち合わせたアプリとなっています。
+
+# 概要
+
+
+Python,Djangoの強力な機能を持ち合わせた同時編集可能なスプレッドシートアプリとなっています。
+
 urls.pyに1行追加するだけでDjango django.contrib.adminのような使用感でモデルを編集することができます｡
 
 
-###サンプル
-ここれでは、編集をするともう片方のウィンドウにも反映されること、ページの更新をしてもモデルが保存されていることを確認しています。
+```
+path("room/", views.RoomView.as_view(model=Shop), name="room")  # 例
+```
+
+
+
+# サンプル
+
+
+編集をするともう片方のウィンドウにも反映されること、ページの更新をしてモデルが保存されていることを確認しています。
 
 https://github.com/hikaru1444/djangochannels/assets/82006837/7c1e835a-c3dd-457b-ba00-013b0ba59928
 
 
-###インストール
-
-Python3,PostgreSQLをインストール
 
 
-Git
+# インストール
+
+
+## Python3,PostgreSQLをインストール
+
+
+## Git
+
+```
 git clone https://github.com/hikaru1444/djangochannels
+```
 
-Docker
-DjangoChannelsのチュートリアルを元にDockerでredisを起動
-Dockerのダウンロード先
-https://www.docker.com/products/docker-desktop/
-起動方法
-https://channels.readthedocs.io/en/latest/tutorial/part_2.html#enable-a-channel-layer
+## Docker
 
 
-Django
+Dockerのダウンロード先 https://www.docker.com/products/docker-desktop/
+```
+$ docker run --rm -p 6379:6379 redis:7
+```
+
+
+## Django
+
+
+```
 cd djangochannels
-.\.venv\Scripts\activate
-pip install -V requirements.txt
-.envにPostgreSQL
-python manage.py migrations
-python manage.py runserver
 
-http://127.0.0.1:8000にアクセスして編集が出来れば成功
+.\.venv\Scripts\activate
+
+pip install -V requirements.txt
+```
+
+.envにPostgreSQLの設定をする
+
+```
+python manage.py migrations
+
+python manage.py runserver
+```
+
+http://127.0.0.1:8000
+
+にアクセスして編集が出来れば成功
 
