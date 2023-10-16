@@ -10,7 +10,7 @@ https://github.com/hikaru1444/djangochannels
 
 Python,Djangoの強力な機能を持ち合わせている同時編集可能なスプレッドシートアプリとなっています。
 
-urls.pyに1行追加するだけでDjango django.contrib.adminのような使用感でモデルを編集することができます｡
+urls.pyに1行追加するだけでdjango.contrib.adminのような使用感でモデルを編集することができます｡
 
 
 ```
