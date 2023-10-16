@@ -8,7 +8,7 @@ https://github.com/hikaru1444/djangochannels
 # 概要
 
 
-Python,Djangoの強力な機能を持ち合わせた同時編集可能なスプレッドシートアプリとなっています。
+Python,Djangoの強力な機能を持ち合わせている同時編集可能なスプレッドシートアプリとなっています。
 
 urls.pyに1行追加するだけでDjango django.contrib.adminのような使用感でモデルを編集することができます｡
 
