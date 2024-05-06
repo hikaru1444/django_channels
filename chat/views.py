@@ -138,5 +138,6 @@ class RoomView(View):
             return JsonResponse({'status': 'success', 'message': params['check']})
         except ValueError:
             params = {
-                "check": "チェック:" + str(dic.get('value')) + "は保存できません｡戻すには｢ctrl+Zキー｣を押してください"}
+                "check": "チェック:" + str(dic.get('value')) + "は保存できません｡戻すには｢ctrl+Zキー｣を押してください"
+            }
             return JsonResponse({'status': 'error', 'message': params['check']})
