@@ -79,3 +79,4 @@ http://127.0.0.1:8000
 
 ※ migrationsで初期データを100件生成している
 
+# django_channels
